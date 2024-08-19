@@ -1,6 +1,5 @@
-
 var canvas = document.getElementById("canvas");
-var huina = canvas.getContext("2d");
+var ctx = canvas.getContext("2d");
 var words = [
     "wolf",
     "programmer",
@@ -15,7 +14,8 @@ var words = [
     "Filin",
     "dust",
     "dinosaur",
-    "sandals", "headlight",
+    "sandals", 
+    "headlight",
     "blind",
     "abyss",
     "bull",
@@ -58,6 +58,9 @@ var words = [
     "package",
     "function",
 ];
+var xWrong = 200
+var yWrong = 500
+
 const chudickParts = [
     [[127, 160], [130, 155], [133, 165], [136, 155], [139, 165], [142, 155], [145, 165], [148, 155], [151, 165]],
     [[143, 200], [153, 160]],
@@ -68,21 +71,33 @@ const chudickParts = [
 function pickWord() {
     return words[Math.floor(Math.random()*words.length)]
 }
-function setupAnswerArray(word) {
+const startX = 1
+const startY = 899
+function setupAnswerArray(ctx, word) {
     var answerArray = []
-    for (var i = 0; i < word.length; i++) {
+    ctx.strokeStyle = 'white';
+    for (var i = 0, x = startX; i < word.length; i++, x += 40) {
         answerArray[i] = "_";
+        ctx.beginPath()
+        ctx.moveTo(x, startY)
+        ctx.lineTo(x +30, startY)
+        ctx.stroke()
     }
     return answerArray;
+    
 }
-function showPlayerProgress(answerArray) {
+function showPlayerProgressAndGues(answerArray) {
     const task = answerArray.join(" ")
-    return guess = prompt(`${task}\n\n👆🏻\nGuess the letter of the word, or if you want to exit, press the <Cancel> button`)
+    return prompt(`${task}\n\n👆🏻\nGuess the letter of the word, or if you want to exit, press the <Cancel> button`)
 }
-function updateGameState(guess, word, answerArray) {
+function updateGameState(guess, word, answerArray, ctx) {
     var numberOfCorrectAnwsers = 0
-    for (var j = 0; j < word.length; j++) { 
+    ctx.textAlign = 'center'
+    ctx.font = 'bold 30px Courier'
+    ctx.fillStyle = 'white';
+    for (var j = 0, x = startX; j < word.length; j++, x +=40) {
         if (word[j].toLowerCase() === guess.toLowerCase() && answerArray[j] === "_") {
+            ctx.fillText(word[j], x+15, startY-7)
             answerArray[j] = word[j]; 
             numberOfCorrectAnwsers += 1
         }
@@ -95,21 +110,20 @@ function showAnswerAndCongratulatePlayer(word,remainingLetters) {
     }
 };
 
-function wow (ctx , pocket, dy){
+function drawOnePartOfChudic (ctx , chudicPart, dy){
     ctx.strokeStyle = 'White'
     ctx.beginPath()
-    ctx.moveTo(pocket[0][0], pocket[0][1]+dy)
-    for (var i = 1; i<pocket.length; i++){
-            ctx.lineTo(pocket[i][0], pocket[i][1]+dy)
-        }
-    ctx.stroke()
-
+    ctx.moveTo(chudicPart[0][0], chudicPart[0][1]+dy)
+    for (var i = 1; i<chudicPart.length; i++){
+        ctx.lineTo(chudicPart[i][0], chudicPart[i][1]+dy)
+    }
+    ctx.stroke()  
 }
-
 
 var word = pickWord()
 
-var answerArray = setupAnswerArray(word);
+
+var answerArray = setupAnswerArray(ctx, word);
 var remainingLetters = word.length;
 var wrongAnswer = chudickParts.length;
 
@@ -117,7 +131,8 @@ var wrongAnswer = chudickParts.length;
     while (remainingLetters > 0) {
         await new Promise(resolve => setTimeout(resolve, 100))
 
-        showPlayerProgress(answerArray)
+        const guess = showPlayerProgressAndGues(answerArray)
+        
         if  (guess === null){
             alert('ok, bye!👋🏻')
             break;
@@ -125,17 +140,28 @@ var wrongAnswer = chudickParts.length;
                 alert("Please enter only one letter.")
     
             }else{
-                const numberOfCorrectAnwsers = updateGameState(guess, word, answerArray)
+                const numberOfCorrectAnwsers = updateGameState(guess, word, answerArray, ctx)
                 remainingLetters -= numberOfCorrectAnwsers;
     
-                if (!numberOfCorrectAnwsers){
 
+                if (!numberOfCorrectAnwsers){
                     wrongAnswer --;
                     var part = chudickParts[wrongAnswer]
-                    wow(huina, part , 200)
-
+                    drawOnePartOfChudic(ctx, part , 200)
+                    
                     await new Promise(resolve => setTimeout(resolve, 100))
-
+                    
+                    ctx.strokeStyle = 'white'
+                    ctx.beginPath()
+                    ctx.moveTo(xWrong, yWrong)
+                    xWrong+=30
+                    ctx.lineTo(xWrong, yWrong)
+                    xWrong-=30
+                    ctx.stroke()
+                    ctx.textBaseline = 'middle'
+                    ctx.textAlign = 'center'
+                    ctx.fillText(guess, xWrong + 15, yWrong)
+                    yWrong+=40
 
                 }
                 if (wrongAnswer === 0){
