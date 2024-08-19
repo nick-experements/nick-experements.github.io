@@ -9,4 +9,5 @@ A message for the future my self:
 ## Here are my projects
 ### Games
 * [Words](./games/words/)
+* [Asteroids](./games/asteroids/)
 

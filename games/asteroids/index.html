@@ -1,0 +1,34 @@
+<!DOCTYPE html> 
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Asteroid!</title> 
+    <style>
+        html,
+        body{
+            height: 100%;
+            width: 100%;
+            margin: 0;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            background-color: #000e1b;
+        }
+
+        #canvas {
+            width: 95vmin;
+            height: 95vmin;
+            background-image: url('Images/pictureOfSpace.jpeg');
+            background-size: 100%;
+        }
+
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="1000" height="1000"></canvas>
+    <script src="https://code.jquery.com/jquery-2.1.0.js"></script>
+    <script src="./Asteroids.js">
+    </script>
+</body>
