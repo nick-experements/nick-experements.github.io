@@ -22,6 +22,9 @@ $('body').keydown(checkSoundBePlaing)
 var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext('2d');
 var intervalId;
+var intervalId2;
+var planetReal;
+var planetsImages = ["Images/planet1.png", "Images/planet2.png"]
 var directionW = 'right'
 var circle = function (x, y, radius, fillCircle) {
     ctx.beginPath();
@@ -146,8 +149,12 @@ Asteroid.prototype.draw = function(){
 }
 
 Asteroid.prototype.move = function(){
-    this.y += this.getSpeed()
-
+    if(score >= 10){
+        this.y += 0
+        this.x += this.getSpeed()
+    } else{
+        this.y += this.getSpeed()
+    }
 }
 Asteroid.prototype.intersection = function(x, y){
     const diffX = x - this.x
@@ -160,6 +167,43 @@ Asteroid.prototype.overflowY = function(height){
 
 Asteroid.prototype.getSpeed = function(){
     return 1/this.radius * 30
+}
+
+function Planet (x, y, img, speed) {
+    this.x = x 
+    this.y = y
+    this.image = img
+    this.speed = speed
+    this.draw()
+}
+Planet.prototype.draw = function (){
+    var viewPlanet = '<img src="'+this.image+'"">';
+    this.planetElement = $(viewPlanet);
+    this.planetElement.addClass('space-planet')
+    this.planetElement.css({
+        left: this.x,
+        top: this.y,
+
+    });
+    // planet.addEventListener("load", () => {
+    //     ctx.drawImage(planet, this.x, this.y);
+    //   });
+    $('body').append(this.planetElement)
+}
+Planet.prototype.move = function (shift = this.speed){
+    this.y += shift
+    this.planetElement.css({
+        left: this.x,
+        top: this.y
+
+    });
+};
+Planet.prototype.checkStopMovingPlanet = function (){
+    if (this.y >= $('body').height()/2){
+        this.y = $('body').height()/2
+        clearTimeout(intervalId2)
+        intervalId2 = null;
+    }
 }
     
 var chance = 0.01;
@@ -187,8 +231,8 @@ var defender = new Defender()
 intervalId = setInterval(function(){
             
     ctx.clearRect(0, 0, width, height)
-    if (Math.random() <=chance){
-        asteroids.push(new Asteroid (Math.random()*(width-3*blockSize)+1.5*blockSize, 10,blockSize*(1+Math.random()*2)))
+    if (Math.random() <=chance && score < 10){
+            asteroids.push(new Asteroid (Math.random()*(width-3*blockSize)+1.5*blockSize, 10,blockSize*(1+Math.random()*2)))
     }
     for(var i = 0; i < asteroids.length; i ++){
         ctx.fillStyle = 'Gray'
@@ -196,9 +240,11 @@ intervalId = setInterval(function(){
         asteroids[i].move()
     }
     for(let i = 0; i < asteroids.length; i ++){
-        if(asteroids[i].overflowY(height)){
+        if (asteroids[i].x >=width){
+            asteroids.splice(i, 1)
+        }else if(asteroids[i].overflowY(height)){
             gameOver()
-        }
+        } 
     }
         
     for(var bulletIndex = 0; bulletIndex < bullets.length; bulletIndex++){
@@ -214,6 +260,13 @@ intervalId = setInterval(function(){
                 }else{
                     asteroids.splice(i, 1)
                     score++
+                    if (score === 10){
+                        planet = new Planet ($('body').width()/2, 0, planetsImages[Math.round(Math.random()*(planetsImages.length-1))], 1/* x, y, img, speed */)
+                        intervalId2 = setInterval(() => {
+                            planet.move()
+                            planet.checkStopMovingPlanet()
+                        }, 30)
+                    }
                     chance += 0.001
 
                 }
@@ -222,7 +275,7 @@ intervalId = setInterval(function(){
             }
         }
                 
-        if(bullet&&bullet.y <= 0 ){
+        if(bullet&&bullet.y<=0){
             bullets.splice(bulletIndex, 1)
         }
     }
@@ -233,5 +286,3 @@ intervalId = setInterval(function(){
     defender.draw()
     drawBorder();
 }, 30)
-
-
